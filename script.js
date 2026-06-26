@@ -28,7 +28,7 @@
     function card(m) {
         var st   = status(m.status);
         var live = m.status === 1 || m.status === 3;
-        var link = (m.active == 1 && m.has_channels == 1) ? (STREAM + '/?m=' + m.id + '&lang=ar') : '#';
+        var link = (m.active==1 && m.has_channels==1) ? ('watch.html?m=' + m.id + '&lang=ar') : '#';
 
         var center;
         if (m.status === 1 || m.status === 2) {
