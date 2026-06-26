@@ -471,3 +471,45 @@ a {
         scroll-behavior: auto !important;
     }
 }
+/* ====== تنسيق أسفل الموقع (Footer) المتوافق مع 13190.png ====== */
+footer {
+    background: linear-gradient(135deg, #6b0000, #8b0000, #c62828);
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+    padding: 40px 16px;
+    font-size: 13px;
+    margin-top: 40px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+footer strong {
+    color: #ffffff;
+    font-size: 18px;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.foot-desc {
+    font-size: 13px;
+    opacity: 0.9;
+    max-width: 650px;
+    margin: 0 auto 14px;
+    line-height: 1.8;
+}
+
+/* لجعل كلمة Yacine TV APK تظهر بشكل بارز في سطر منفصل */
+.foot-desc strong {
+    display: block;
+    font-size: 15px;
+    color: #ffffff;
+    margin-top: 8px;
+}
+
+.foot-copy {
+    opacity: 0.6;
+    font-size: 12px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
