@@ -1,32 +1,35 @@
 (function() {
     'use strict';
 
-    // 1. التقاط معرّفات الروابط (Query Parameters) القادمة من الصفحة الرئيسية
+    // التقاط الـ ID للمباراة من رابط الصفحة
     var urlParams = new URLSearchParams(window.location.search);
     var matchId   = urlParams.get('m');
     
-    // الرابط الأساسي لسيرفر البث الخارجي
-    var STREAM_BASE = 'https://xyzyacineweb-org.panel001.com';
-    var player      = document.getElementById('live-player');
+    // الرابط المعتمد لسيرفر جلب البث الخارجي
+    var STREAM_SERVER_URL = 'https://xyzyacineweb-org.panel001.com';
+    var playerIframe      = document.getElementById('live-player');
 
-    // 2. التحقق من وجود المعرف وتحديث مصدر الـ iframe
+    // التحقق من وجود معرف المباراة وبدء البث
     if (matchId) {
-        player.src = STREAM_BASE + '/?m=' + matchId + '&lang=ar';
+        playerIframe.src = STREAM_SERVER_URL + '/?m=' + matchId + '&lang=ar';
     } else {
-        // في حال تم الدخول للصفحة بدون تحديد مباراة
-        document.getElementById('player-title').innerText = 'تنبيه: لم يتم تحديد مباراة للبث';
-        player.style.display = 'none';
+        // رسالة افتراضية إذا لم يتم تمرير مباراة
+        document.getElementById('match-title').innerText = "لم يتم تحديد مباراة";
+        document.getElementById('match-subtitle').innerText = "يرجى العودة للصفحة الرئيسية واختيار بث";
     }
 })();
 
-// دالة تبديل السيرفرات (يمكنك ربطها بروابط سيرفراتك الخارجية مستقبلاً)
-function changeServer(serverNumber) {
-    var buttons = document.querySelectorAll('.server-btn');
-    buttons.forEach(function(btn) { btn.classList.remove('active'); });
+// دالة تبديل السيرفرات (الأزرار الملونة)
+function changeServer(serverIndex) {
+    // إزالة تفعيل جميع الأزرار
+    var allButtons = document.querySelectorAll('.srv-btn');
+    allButtons.forEach(function(btn) {
+        btn.classList.remove('active');
+    });
     
-    // تفعيل الزر المضغوط
+    // تفعيل الزر المنقور
     event.currentTarget.classList.add('active');
     
-    // هنا يمكنك تغيير الـ src الخاص بالمشغل بناءً على السيرفر المختار
-    console.log("تم التبديل إلى السيرفر رقم: " + serverNumber);
+    console.log("تم تفعيل السيرفر رقم: " + serverIndex);
+    // يمكنك ربط كل زر بتغيير رابط الـ iframe حسب احتياجك هنا
 }

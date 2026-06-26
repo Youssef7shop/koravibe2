@@ -5,42 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
-    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noodp, noydir">
+    <!-- حماية الخصوصية ومنع محركات البحث -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="googlebot" content="noindex, nofollow">
-    <meta name="bingbot" content="noindex, nofollow">
-    <meta name="slurp" content="noindex, nofollow">
-    <meta name="duckduckbot" content="noindex, nofollow">
-    <meta name="baiduspider" content="noindex, nofollow">
-    <meta name="yandex" content="noindex, nofollow">
-    <meta http-equiv="X-Robots-Tag" content="noindex, nofollow">
     <meta name="referrer" content="no-referrer" />
     
-    <title>شاهد المباراة بث مباشر</title>
+    <title>شاهد المباراة بث مباشر - yacine-tv</title>
     
+    <!-- استدعاء مكتبة الأيقونات للتطابق مع الصورة -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- استدعاء ملف التنسيق -->
     <link rel="stylesheet" href="watch.css">
 </head>
 <body>
 
-<div class="player-container">
-    <div class="player-header">
-        <a href="index.html" class="back-btn">⬅️ جدول المباريات</a>
-        <h2 id="player-title">شاهد البث المباشر الآن</h2>
-    </div>
-    
-    <div class="iframe-wrapper">
-        <iframe id="live-player" src="" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-    </div>
-    
-    <div class="servers-section">
-        <h3>سيرفرات المشاهدة البديلة</h3>
-        <div class="servers-grid">
-            <button class="server-btn active" onclick="changeServer(1)">سيرفر HD الرئيسي</button>
-            <button class="server-btn" onclick="changeServer(2)">سيرفر SD للمنتجعات</button>
-            <button class="server-btn" onclick="changeServer(3)">سيرفر متعدد الجودات</button>
+    <!-- الشريط العلوي -->
+    <header class="top-nav">
+        <div class="nav-logo">
+            <i class="fa-solid fa-futbol"></i> yacine-tv.mov
         </div>
-    </div>
-</div>
+        <div class="nav-title">
+            <h1 id="match-title">السنغال ضد العراق</h1>
+            <p id="match-subtitle">كابونا</p>
+        </div>
+        <div class="nav-socials">
+            <a href="#" aria-label="Dark Mode"><i class="fa-solid fa-moon"></i></a>
+            <a href="#" aria-label="Copy"><i class="fa-regular fa-copy"></i></a>
+            <a href="#" aria-label="Discord"><i class="fa-brands fa-discord"></i></a>
+            <a href="#" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a>
+            <a href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+        </div>
+    </header>
 
-<script src="watch.js"></script>
+    <!-- المحتوى الرئيسي للمشاهدة والدردشة -->
+    <main class="watch-layout">
+        
+        <!-- قسم الفيديو (يمين) -->
+        <section class="player-section">
+            <div class="home-btn-wrapper">
+                <a href="index.html" class="home-btn">الصفحة الرئيسية لموقع yacine-tv.mov 🏠</a>
+            </div>
+
+            <div class="player-card">
+                <!-- أزرار السيرفرات أعلى المشغل -->
+                <div class="servers-bar">
+                    <button class="srv-btn btn-blue" onclick="changeServer(1)">قناة 4 ITV</button>
+                    <button class="srv-btn btn-purple" onclick="changeServer(2)">ALW 1</button>
+                    <button class="srv-btn btn-pink active" onclick="changeServer(3)">beIN MAX 1</button>
+                </div>
+                
+                <!-- حاوية الفيديو -->
+                <div class="iframe-container">
+                    <iframe id="live-player" src="" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- قسم الدردشة (يسار) -->
+        <aside class="chat-section">
+            <div class="chat-header">
+                <span class="chat-title">الدردشة المباشرة <span class="live-indicator"></span></span>
+            </div>
+            
+            <div class="chat-info-bar">
+                <span class="chat-tag">World Cup-ar</span>
+                <span class="chat-viewers"><i class="fa-solid fa-user-group"></i> 3</span>
+            </div>
+
+            <!-- الرسائل -->
+            <div class="chat-messages" id="chat-box">
+                <div class="msg">
+                    <div class="msg-meta"><span class="msg-user text-purple">xando_xvji</span> • 3:31:50 AM</div>
+                    <div class="msg-text">👀 🔭</div>
+                </div>
+                <div class="msg">
+                    <div class="msg-meta"><span class="msg-user text-yellow">abderrahmane_be_cv9a</span> • 3:17:26 AM</div>
+                    <div class="msg-text">❤</div>
+                </div>
+                <div class="msg">
+                    <div class="msg-meta"><span class="msg-user text-green">lazreg_lazreg_o8o7</span> • 4:00:25 AM</div>
+                    <div class="msg-text">👀</div>
+                </div>
+                <div class="msg">
+                    <div class="msg-meta"><span class="msg-user text-green">lazreg_lazreg_o8o7</span> • 3:59:00 AM</div>
+                    <div class="msg-text">👍</div>
+                </div>
+                <div class="msg">
+                    <div class="msg-meta"><span class="msg-user text-green">lazreg_lazreg_o8o7</span> • 3:56:44 AM</div>
+                    <div class="msg-text">معليش بريفي</div>
+                </div>
+                <div class="msg">
+                    <div class="msg-meta"><span class="msg-user text-green">lazreg_lazreg_o8o7</span> • 3:55:42 AM</div>
+                    <div class="msg-text">😍😍😍😍</div>
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <script src="watch.js"></script>
 </body>
 </html>
