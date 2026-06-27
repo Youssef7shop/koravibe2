@@ -102,8 +102,8 @@
         load();
     }
     
-    // تحديث البيانات تلقائياً كل 60 ثانية بدون إعادة تحميل الصفحة
-    setInterval(load, 60000);
+    // تحديث البيانات تلقائياً كل 50 ثانية بدون إعادة تحميل الصفحة
+    setInterval(load, 50000);
     // دالة تحديث التاريخ تلقائياً
 function updateDateDisplay() {
     const dateElement = document.getElementById('current-date');
