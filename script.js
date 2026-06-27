@@ -38,12 +38,12 @@
             center = '<div class="kick-time">' + m.time + '</div><div class="kick-label">انطلاق</div>';
         }
         
-        var foot = live ? '<div class="card-foot"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><polygon points="2,1 11,6 2,11" fill="#fff"/></svg>شاهد على ياسين تيفي</div>' : '';
+        var foot = live ? '<div class="card-foot"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><polygon points="2,1 11,6 2,11" fill="#fff"/></svg>شاهد على كورة تيفي</div>' : '';
 
         var inner = 
             '<div class="card-head">' +
                 '<div class="league-row">' +
-                    '<img src="' + LIMG + m.league_logo + '" alt="' + m.league_en + ' - ياسين تيفي" class="league-img" loading="lazy" width="20" height="20" onerror="this.style.display=\'none\'">' +
+                    '<img src="' + LIMG + m.league_logo + '" alt="' + m.league_en + ' - كورة تيفي" class="league-img" loading="lazy" width="20" height="20" onerror="this.style.display=\'none\'">' +
                     '<span class="league-name">' + m.league_en + '</span>' +
                 '</div>' +
                 '<span class="badge ' + st.cls + '">' + st.label + '</span>' +
@@ -63,9 +63,9 @@
             '</div>' + foot;
 
         if (live) {
-            return '<a href="' + link + '" class="card' + (m.status === 2 ? ' finished' : '') + '" target="_blank" rel="noopener noreferrer" aria-label="شاهد ' + m.home_en + ' ضد ' + m.away_en + ' على ياسين تيفي">' + inner + '</a>';
+            return '<a href="' + link + '" class="card' + (m.status === 2 ? ' finished' : '') + '" target="_blank" rel="noopener noreferrer" aria-label="شاهد ' + m.home_en + ' ضد ' + m.away_en + ' على كورة تيفي">' + inner + '</a>';
         }
-        return '<div class="card' + (m.status === 2 ? ' finished' : '') + '" aria-label="' + m.home_en + ' vs ' + m.away_en + ' - ياسين تيفي">' + inner + '</div>';
+        return '<div class="card' + (m.status === 2 ? ' finished' : '') + '" aria-label="' + m.home_en + ' vs ' + m.away_en + ' - كورة تيفي">' + inner + '</div>';
     }
 
     function show(id, block) { document.getElementById(id).style.display = block || 'block'; }
