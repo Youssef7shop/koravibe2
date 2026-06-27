@@ -514,3 +514,34 @@ footer strong {
     padding-top: 15px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+}.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 20px;
+    padding-bottom: 20px;
+}
+
+.social-links a {
+    color: #ffffff;
+    font-size: 28px;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+/* ألوان الأيقونات عند مرور الماوس */
+.social-links a:hover {
+    opacity: 1;
+    transform: translateY(-5px);
+}
+
+.facebook:hover { color: #1877f2; }
+.tiktok:hover { color: #ff0050; }
+.instagram:hover { color: #e1306c; }
+.telegram:hover { color: #0088cc; }
