@@ -104,4 +104,17 @@
     
     // تحديث البيانات تلقائياً كل 60 ثانية بدون إعادة تحميل الصفحة
     setInterval(load, 60000);
+    // دالة تحديث التاريخ تلقائياً
+function updateDateDisplay() {
+    const dateElement = document.getElementById('current-date');
+    if (dateElement) {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        // 'fr-FR' يضمن عرض التاريخ باللغة الفرنسية
+        const today = new Date().toLocaleDateString('fr-FR', options);
+        dateElement.textContent = today;
+    }
+}
+
+// استدعاء الدالة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', updateDateDisplay);
 })();
