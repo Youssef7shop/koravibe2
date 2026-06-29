@@ -769,7 +769,8 @@ body {
 
 .btn-secondary {
     background: var(--card-bg);
-    color: var(--text-primary); border: 2px solid var(--card-border);
+    color: var(--text-primary);
+    border: 2px solid var(--card-border);
 }
 
 .btn-secondary:hover {
@@ -1200,15 +1201,32 @@ body {
     }
 }
 /* إخفاء حاويات الإعلانات الشائعة */
+[id^="ad-"], 
+[id*="-ad-"], 
+[class*="ad-container"], 
+[class*="adsbygoogle"], 
+[class*="banner-ad"], 
+[class*="pop-up"], 
 .ads, 
-.ad-container, 
-.banner-ads, 
-.adv-box,
-#ads-zone {
+.ad-slot, 
+.advertisement {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+    z-index: -9999 !important;
+    pointer-events: none !important;
 }
 
-/* إذا كانت الإعلانات تظهر كـ iframes في أماكن معينة */
-.watch-page iframe[src*="ad"] {
+/* إخفاء إطارات iframe الخاصة بالإعلانات */
+iframe[src*="doubleclick.net"], 
+iframe[src*="ads"], 
+iframe[name*="ad"] {
     display: none !important;
 }
