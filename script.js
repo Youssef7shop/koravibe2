@@ -37,7 +37,7 @@
     function card(m) {
         var realStatus = getRealStatus(m);
         var st = status(realStatus);
-        var link = 'watch.html?id=' + m.id;
+        var link = 'match.html?id=' + m.id;
 
         var center;
         // عرض النتيجة إذا كانت مباشرة (1) أو انتهت (2)
@@ -90,7 +90,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', load);
-    setInterval(load, 60000); 
+    setInterval(load, 30000); 
 })();
 // دالة تحديث التاريخ تلقائياً باللغة الفرنسية
 function updateDateDisplay() {

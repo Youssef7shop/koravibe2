@@ -963,7 +963,7 @@ if (document.readyState === 'loading') {
 } else {
     init();
 }
-document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", () => {
     // الكلمات المفتاحية الشائعة لروابط ومعرفات الإعلانات
     const adKeywords = ['ad', 'ads', 'doubleclick', 'banner', 'popup', 'sponsor'];
 
@@ -1013,4 +1013,5 @@ document.addEventListener("DOMContentLoaded", () => {
         subtree: true 
     });
 });
+
 </body>
