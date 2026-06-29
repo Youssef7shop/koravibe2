@@ -427,6 +427,41 @@ body {
     transition: color 0.3s ease;
 }
 
+/* --- الإضافة الجديدة الخاصة بتفاصيل المباراة --- */
+.match-details-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 5px 0;
+    width: 100%;
+}
+
+.match-details-list p {
+    margin: 0;
+    padding: 12px 15px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.match-details-list strong {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.match-details-list span {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+/* ------------------------------------------- */
+
 /* Footer */
 .footer {
     text-align: center;
@@ -507,6 +542,10 @@ body {
     }
     
     .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .match-details-list {
         grid-template-columns: 1fr;
     }
     
@@ -1199,34 +1238,4 @@ body {
         font-size: 28px;
         margin: -5px -5px 10px 10px;
     }
-}
-/* إخفاء حاويات الإعلانات الشائعة */
-[id^="ad-"], 
-[id*="-ad-"], 
-[class*="ad-container"], 
-[class*="adsbygoogle"], 
-[class*="banner-ad"], 
-[class*="pop-up"], 
-.ads, 
-.ad-slot, 
-.advertisement {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    position: absolute !important;
-    top: -9999px !important;
-    left: -9999px !important;
-    z-index: -9999 !important;
-    pointer-events: none !important;
-}
-
-/* إخفاء إطارات iframe الخاصة بالإعلانات */
-iframe[src*="doubleclick.net"], 
-iframe[src*="ads"], 
-iframe[name*="ad"] {
-    display: none !important;
 }

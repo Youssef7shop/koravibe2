@@ -1,6 +1,18 @@
-// Detect referer-based site info (returns { url, label } or null)
-// Extracts the subdomain from the referer, strips 'xyz' prefix,
-// then converts the last '-' to '.' to get the clean domain label.
+/**
+ * @file match.js
+ * @description Core logic for Match streaming, UI updates, and player initialization.
+ */
+
+// ==========================================
+// 1. Core Utilities & Subdomain Detection
+// ==========================================
+
+/**
+ * Detect referer-based site info
+ * Extracts the subdomain from the referer, strips 'xyz' prefix,
+ * then converts the last '-' to '.' to get the clean domain label.
+ * @returns {{ url: string, label: string } | null}
+ */
 const getRefererSite = () => {
     try {
         const ref = document.referrer;
@@ -15,11 +27,15 @@ const getRefererSite = () => {
         const label = sub.substring(0, lastDash) + '.' + sub.substring(lastDash + 1);
         return { url: `https://${label}/`, label };
     } catch (e) {
+        console.warn('Referer detection failed:', e);
         return null;
     }
 };
 
-// Get MAIN_URL based on subdomain
+/**
+ * Get MAIN_URL based on subdomain or referer
+ * @returns {string}
+ */
 const getMainUrl = () => {
     // Check referer map first
     const refSite = getRefererSite();
@@ -38,7 +54,6 @@ const getMainUrl = () => {
     
     // If subdomain exists, convert last dash to dot and create URL
     if (subdomain) {
-        // Find the last occurrence of dash and replace with dot
         const lastDashIndex = subdomain.lastIndexOf('-');
         if (lastDashIndex !== -1) {
             const convertedDomain = subdomain.substring(0, lastDashIndex) + '.' + subdomain.substring(lastDashIndex + 1);
@@ -47,10 +62,13 @@ const getMainUrl = () => {
     }
     
     // Default fallback
-    return 'https://kooratv-1.vercel.app/';
+    return 'https://hesgoalo.com/';
 };
 
-// Configuration
+// ==========================================
+// 2. Configuration & State Management
+// ==========================================
+
 const MAIN_URL = getMainUrl();
 const CONFIG = {
     API_MATCHE_URL: 'https://ws.kora-api.top/',
@@ -66,9 +84,87 @@ const CONFIG = {
 };
 
 // Edge balancing state
-let edgeList = [];      // full frame URLs e.g. ["https://a11.kora-plus.mov/frame.php", ...]
+let edgeList = []; // full frame URLs e.g. ["https://a11.kora-plus.mov/frame.php", ...]
+let currentPlayer = null;
+let matchData = null;
 
-// Build full frame URLs from edges + edge_domain
+console.log('Main URL detected:', CONFIG.MAIN_URL);
+
+// ==========================================
+// 3. Helper Functions & Storage
+// ==========================================
+
+/**
+ * Safe Local Storage wrapper to prevent incognito mode crashes
+ */
+const safeStorage = {
+    getItem: (key) => {
+        try { return localStorage.getItem(key); } 
+        catch (e) { return null; }
+    },
+    setItem: (key, value) => {
+        try { localStorage.setItem(key, value); } 
+        catch (e) { console.warn('LocalStorage is disabled'); }
+    }
+};
+
+/**
+ * Debounce function to optimize resize events
+ */
+const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+};
+
+const escapeHtml = (text) => {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+};
+
+const getUrlParam = (param) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+};
+
+const generateUUID = () => {
+    const d = new Date().getTime();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (d + Math.random() * 16) % 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+};
+
+const getVisitorId = () => {
+    let visitorId = safeStorage.getItem('visitorId1');
+    if (!visitorId) {
+        visitorId = generateUUID();
+        safeStorage.setItem('visitorId1', visitorId);
+    }
+    return visitorId;
+};
+
+const encryptUrl = (str) => {
+    const hex = Array.from(str).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+    return btoa(hex);
+};
+
+const goHome = () => {
+    window.location.href = CONFIG.MAIN_URL;
+};
+
+// ==========================================
+// 4. Edge Networking
+// ==========================================
+
 const initEdges = (matchData) => {
     const edges = Array.isArray(matchData.edges)
         ? matchData.edges
@@ -85,64 +181,21 @@ const initEdges = (matchData) => {
     console.log('Edges initialized:', edgeList);
 };
 
-// Pick a random edge each time (pure random, no round-robin)
 const getNextEdgeUrl = () => {
     const list = edgeList.length > 0 ? edgeList : CONFIG.FALLBACK_FRAME_URLs;
     return list[Math.floor(Math.random() * list.length)];
 };
 
-// Log the detected URL for debugging
-console.log('Main URL detected:', CONFIG.MAIN_URL);
+// ==========================================
+// 5. Theme Management
+// ==========================================
 
-// State
-let currentPlayer = null;
-let matchData = null;
-
-// Utility Functions
-const escapeHtml = (text) => {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-const getUrlParam = (param) => {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-};
-
-const generateUUID = () => {
-    const d = new Date().getTime();
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = (d + Math.random() * 16) % 16 | 0;
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-};
-
-const getVisitorId = () => {
-    let visitorId = localStorage.getItem('visitorId1');
-    if (!visitorId) {
-        visitorId = generateUUID();
-        localStorage.setItem('visitorId1', visitorId);
-    }
-    return visitorId;
-};
-
-const encryptUrl = (str) => {
-    const hex = Array.from(str).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
-    return btoa(hex);
-};
-
-const goHome = () => {
-    window.location.href = CONFIG.MAIN_URL;
-};
-
-// Theme Management
 const getTheme = () => {
-    return localStorage.getItem('theme') || 'dark';
+    return safeStorage.getItem('theme') || 'dark';
 };
 
 const setTheme = (theme) => {
-    localStorage.setItem('theme', theme);
+    safeStorage.setItem('theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
     updateThemeIcon(theme);
 };
@@ -161,19 +214,20 @@ const toggleTheme = () => {
     console.log('Theme switched to:', newTheme);
 };
 
-// Initialize theme on load
 const initTheme = () => {
     const savedTheme = getTheme();
     setTheme(savedTheme);
 };
 
-// Social Share Functions
-const getCurrentUrl = () => {
-    return window.location.href;
-};
+// ==========================================
+// 6. Social Share & Clipboard
+// ==========================================
+
+const getCurrentUrl = () => window.location.href;
 
 const getShareText = () => {
-    const title = document.getElementById('matchTitle').textContent;
+    const titleEl = document.getElementById('matchTitle');
+    const title = titleEl ? titleEl.textContent : 'Match';
     return `Watch ${title} Live Stream on Hesgoal TV`;
 };
 
@@ -181,42 +235,32 @@ const updateShareLinks = () => {
     const url = encodeURIComponent(getCurrentUrl());
     const text = encodeURIComponent(getShareText());
     
-    // Twitter/X
     const twitterBtn = document.getElementById('shareTwitter');
-    if (twitterBtn) {
-        twitterBtn.href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
-    }
+    if (twitterBtn) twitterBtn.href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
     
-    // Facebook
     const facebookBtn = document.getElementById('shareFacebook');
-    if (facebookBtn) {
-        facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-    }
+    if (facebookBtn) facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
     
-    // WhatsApp
     const whatsappBtn = document.getElementById('shareWhatsApp');
-    if (whatsappBtn) {
-        whatsappBtn.href = `https://wa.me/?text=${text}%20${url}`;
-    }
+    if (whatsappBtn) whatsappBtn.href = `https://wa.me/?text=${text}%20${url}`;
     
-    // Telegram
     const telegramBtn = document.getElementById('shareTelegram');
-    if (telegramBtn) {
-        telegramBtn.href = `https://t.me/share/url?url=${url}&text=${text}`;
-    }
+    if (telegramBtn) telegramBtn.href = `https://t.me/share/url?url=${url}&text=${text}`;
 };
 
 const copyToClipboard = async () => {
     const url = getCurrentUrl();
     const copyBtn = document.getElementById('copyLink');
+    if (!copyBtn) return;
+    
     const svgIcon = copyBtn.querySelector('svg');
+    const successIcon = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
     
     try {
         await navigator.clipboard.writeText(url);
         
-        // Visual feedback - change to checkmark
         const originalSvg = svgIcon.outerHTML;
-        svgIcon.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+        svgIcon.innerHTML = successIcon;
         copyBtn.style.background = '#10b981';
         copyBtn.style.borderColor = '#10b981';
         copyBtn.style.color = '#ffffff';
@@ -232,7 +276,7 @@ const copyToClipboard = async () => {
     } catch (err) {
         console.error('Failed to copy:', err);
         
-        // Fallback for older browsers
+        // Fallback
         const textArea = document.createElement('textarea');
         textArea.value = url;
         textArea.style.position = 'fixed';
@@ -243,7 +287,7 @@ const copyToClipboard = async () => {
         try {
             document.execCommand('copy');
             const originalSvg = svgIcon.outerHTML;
-            svgIcon.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+            svgIcon.innerHTML = successIcon;
             copyBtn.style.background = '#10b981';
             copyBtn.style.borderColor = '#10b981';
             setTimeout(() => {
@@ -259,14 +303,17 @@ const copyToClipboard = async () => {
     }
 };
 
-// API Functions
+// ==========================================
+// 7. Data Fetching & Player Setup
+// ==========================================
+
 const fetchMatchData = async (matcheId, lang = 'en') => {
     const timestamp = Date.now();
     const apiUrl = `${CONFIG.API_MATCHE_URL}api/matche/${matcheId}/${lang}?t=${timestamp}`;
     
     try {
         const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error('API request failed');
+        if (!response.ok) throw new Error(`API request failed with status: ${response.status}`);
         return await response.json();
     } catch (error) {
         console.error('Error fetching match data:', error);
@@ -274,40 +321,41 @@ const fetchMatchData = async (matcheId, lang = 'en') => {
     }
 };
 
-// Player Functions
 const updatePlayer = (link, kUrl, chLink, type, ch, edge, p) => {
     const t = Math.floor(Date.now() / 1000);
     const playerContainer = document.getElementById('playerContainer');
+    if (!playerContainer) return;
     
     // Decode URLs
     kUrl = decodeURIComponent(atob(kUrl).replace(/(.{1,2})/g, "%$1"));
     kUrl = `${kUrl}?kt=${t}`;
     link = decodeURIComponent(atob(link).replace(/(.{1,2})/g, "%$1"));
     
-    // Clear container
     playerContainer.innerHTML = '';
     
-    // Destroy previous player if exists
     if (currentPlayer && typeof currentPlayer.destroy === 'function') {
         currentPlayer.destroy();
         currentPlayer = null;
     }
     
     if (type === 'HLS') {
-        // HLS Stream with Clappr
-        currentPlayer = new Clappr.Player({
-            source: chLink,
-            mimeType: "application/x-mpegURL",
-            disableErrorScreen: true,
-            poster: `${CONFIG.MAIN_URL}assets/images/hesgoal.webp`,
-            autoPlay: true,
-            height: "100%",
-            width: "100%",
-            parentId: "#playerContainer",
-            mediacontrol: { seekbar: "#667eea", buttons: "#fff" }
-        });
+        if (typeof Clappr !== 'undefined') {
+            currentPlayer = new Clappr.Player({
+                source: chLink,
+                mimeType: "application/x-mpegURL",
+                disableErrorScreen: true,
+                poster: `${CONFIG.MAIN_URL}assets/images/hesgoal.webp`,
+                autoPlay: true,
+                height: "100%",
+                width: "100%",
+                parentId: "#playerContainer",
+                mediacontrol: { seekbar: "#667eea", buttons: "#fff" }
+            });
+        } else {
+            console.error('Clappr is not defined. Cannot load HLS stream.');
+            showError('Player library not found.');
+        }
     } else {
-        // iFrame Stream
         const iframe = document.createElement('iframe');
         iframe.className = 'player-iframe';
         iframe.setAttribute('width', "100%");
@@ -329,16 +377,17 @@ const updatePlayer = (link, kUrl, chLink, type, ch, edge, p) => {
     }
 };
 
-// UI Update Functions
+// ==========================================
+// 8. UI Rendering
+// ==========================================
+
 const updateMatchInfo = (match, lang = 'en') => {
-    // Select fields based on language
     const home = lang === 'ar' ? match.home : match.home_en;
     const away = lang === 'ar' ? match.away : match.away_en;
     const league = lang === 'ar' ? match.league : match.league_en;
     const vs = lang === 'ar' ? 'ضد' : 'vs';
     const isRTL = lang === 'ar';
     
-    // Arabic translations
     const translations = {
         matchInfo: isRTL ? 'معلومات المباراة 📋' : '📋 Match Information',
         aboutStream: isRTL ? 'حول هذا البث 📺' : '📺 About This Stream',
@@ -353,20 +402,24 @@ const updateMatchInfo = (match, lang = 'en') => {
         enjoy: isRTL ? 'استمتع بالبث الكامل للمباراة مع خيارات خوادم متعددة ودون الحاجة للتسجيل.' : 'Enjoy the full match broadcast with multiple server options and no registration required.'
     };
     
-    // Update card headers and set RTL direction
-    document.getElementById('matchInfoHeader').textContent = translations.matchInfo;
-    document.getElementById('aboutStreamHeader').textContent = translations.aboutStream;
-    document.getElementById('matchInfoCard').style.direction = isRTL ? 'rtl' : 'ltr';
-    document.getElementById('aboutStreamCard').style.direction = isRTL ? 'rtl' : 'ltr';
+    // Update headers safely
+    const matchInfoHeader = document.getElementById('matchInfoHeader');
+    const aboutStreamHeader = document.getElementById('aboutStreamHeader');
+    const matchInfoCard = document.getElementById('matchInfoCard');
+    const aboutStreamCard = document.getElementById('aboutStreamCard');
     
-    // Update title
-    document.getElementById('matchTitle').textContent = `${home} ${vs} ${away}`;
-    document.getElementById('matchLeague').textContent = league;
+    if (matchInfoHeader) matchInfoHeader.textContent = translations.matchInfo;
+    if (aboutStreamHeader) aboutStreamHeader.textContent = translations.aboutStream;
+    if (matchInfoCard) matchInfoCard.style.direction = isRTL ? 'rtl' : 'ltr';
+    if (aboutStreamCard) aboutStreamCard.style.direction = isRTL ? 'rtl' : 'ltr';
     
-    // Update share links with match info
+    const titleEl = document.getElementById('matchTitle');
+    const leagueEl = document.getElementById('matchLeague');
+    if (titleEl) titleEl.textContent = `${home} ${vs} ${away}`;
+    if (leagueEl) leagueEl.textContent = league;
+    
     updateShareLinks();
     
-    // Update chat iframe with league room
     const chatIframe = document.getElementById('chatIframe');
     if (chatIframe && match.league_en) {
         const roomId = lang === 'ar' ? `${match.league_en}-${lang}` : match.league_en;
@@ -374,51 +427,54 @@ const updateMatchInfo = (match, lang = 'en') => {
         chatIframe.setAttribute('src', chatUrl);
     }
     
-    // Update match info grid
     const infoGrid = document.getElementById('matchInfo');
-    infoGrid.innerHTML = `
-        <div class="info-item">
-            <div class="info-label">${translations.league}</div>
-            <div class="info-value">${escapeHtml(league)}</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">${translations.date}</div>
-            <div class="info-value">${escapeHtml(match.date)}</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">${translations.time}</div>
-            <div class="info-value">${escapeHtml(match.time)} GMT</div>
-        </div>
-        ${match.score ? `
-        <div class="info-item">
-            <div class="info-label">${translations.score}</div>
-            <div class="info-value">${escapeHtml(match.score)}</div>
-        </div>
-        ` : ''}
-    `;
-    
-    // Update description
-    if (isRTL) {
-        document.getElementById('matchDescription').innerHTML = `
-            ${translations.watch} <strong>${escapeHtml(home)} ${vs} ${escapeHtml(away)}</strong> ${translations.liveStream} ${CONFIG.APP_NAME}. 
-            ${translations.matchScheduled} <strong>${escapeHtml(league)}</strong> ${translations.at} <strong>${escapeHtml(match.date)}</strong> ${translations.at} <strong>${escapeHtml(match.time)} GMT</strong>.
-            ${translations.enjoy}
-        `;
-    } else {
-        document.getElementById('matchDescription').innerHTML = `
-            ${translations.watch} <strong>${escapeHtml(home)} ${vs} ${escapeHtml(away)}</strong> ${translations.liveStream} ${CONFIG.APP_NAME}. 
-            This <strong>${escapeHtml(league)}</strong> ${translations.matchScheduled} <strong>${escapeHtml(match.date)}</strong> ${translations.at} <strong>${escapeHtml(match.time)} GMT</strong>.
-            ${translations.enjoy}
+    if (infoGrid) {
+        infoGrid.innerHTML = `
+            <div class="info-item">
+                <div class="info-label">${translations.league}</div>
+                <div class="info-value">${escapeHtml(league)}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">${translations.date}</div>
+                <div class="info-value">${escapeHtml(match.date)}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">${translations.time}</div>
+                <div class="info-value">${escapeHtml(match.time)} GMT</div>
+            </div>
+            ${match.score ? `
+            <div class="info-item">
+                <div class="info-label">${translations.score}</div>
+                <div class="info-value">${escapeHtml(match.score)}</div>
+            </div>
+            ` : ''}
         `;
     }
     
-    // Update page title
-    const titleSep = isRTL ? '-' : 'vs';
-    document.title = `${home} ${titleSep} ${away}`;
+    const descEl = document.getElementById('matchDescription');
+    if (descEl) {
+        if (isRTL) {
+            descEl.innerHTML = `
+                ${translations.watch} <strong>${escapeHtml(home)} ${vs} ${escapeHtml(away)}</strong> ${translations.liveStream} ${CONFIG.APP_NAME}. 
+                ${translations.matchScheduled} <strong>${escapeHtml(league)}</strong> ${translations.at} <strong>${escapeHtml(match.date)}</strong> ${translations.at} <strong>${escapeHtml(match.time)} GMT</strong>.
+                ${translations.enjoy}
+            `;
+        } else {
+            descEl.innerHTML = `
+                ${translations.watch} <strong>${escapeHtml(home)} ${vs} ${escapeHtml(away)}</strong> ${translations.liveStream} ${CONFIG.APP_NAME}. 
+                This <strong>${escapeHtml(league)}</strong> ${translations.matchScheduled} <strong>${escapeHtml(match.date)}</strong> ${translations.at} <strong>${escapeHtml(match.time)} GMT</strong>.
+                ${translations.enjoy}
+            `;
+        }
+    }
+    
+    document.title = `${home} ${isRTL ? '-' : 'vs'} ${away}`;
 };
 
 const createServerButtons = (channels) => {
     const serverButtonsContainer = document.getElementById('serverButtons');
+    if (!serverButtonsContainer) return;
+    
     serverButtonsContainer.innerHTML = '';
     
     channels.forEach((channel, index) => {
@@ -428,12 +484,9 @@ const createServerButtons = (channels) => {
         button.dataset.index = index;
         
         button.onclick = function() {
-            document.querySelectorAll('.btn-server').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('.btn-server').forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
             
-            // Pick next edge (round-robin) for each server button click
             const frameUrl = getNextEdgeUrl();
             const uKey = encryptUrl(frameUrl);
             updatePlayer(uKey, uKey, channel.link, channel.type, channel.ch, channel.edge, CONFIG.P_VALUE);
@@ -442,7 +495,6 @@ const createServerButtons = (channels) => {
         serverButtonsContainer.appendChild(button);
     });
     
-    // Auto-load first channel
     if (channels.length > 0) {
         const firstChannel = channels[0];
         const frameUrl = getNextEdgeUrl();
@@ -457,15 +509,16 @@ const createServerButtons = (channels) => {
 };
 
 const showError = (message) => {
-    document.getElementById('serverButtons').innerHTML = `<div class="error-message">${message}</div>`;
-    document.getElementById('playerContainer').innerHTML = `<div class="loading"><div class="error-message">${message}</div></div>`;
+    const serverBtnBox = document.getElementById('serverButtons');
+    const playerBox = document.getElementById('playerContainer');
+    if (serverBtnBox) serverBtnBox.innerHTML = `<div class="error-message">${message}</div>`;
+    if (playerBox) playerBox.innerHTML = `<div class="loading"><div class="error-message">${message}</div></div>`;
 };
 
-// Update Logo
 const updateLogo = (lang = 'en', domainName = null) => {
-    const isAr = lang === 'ar';
     const logo = document.getElementById('siteLogo');
-    
+    if (!logo) return;
+    const isAr = lang === 'ar';
     const refSite = getRefererSite();
     const displayName = domainName || (refSite ? refSite.label : null);
 
@@ -476,133 +529,38 @@ const updateLogo = (lang = 'en', domainName = null) => {
     }
 };
 
-// Update Home Button
 const updateHomeButton = (lang = 'en', domainName = null) => {
-    const isAr = lang === 'ar';
     const homeButtonWrapper = document.getElementById('homeButtonWrapper');
     const homeButtonText = document.getElementById('homeButtonText');
-
+    if (!homeButtonWrapper || !homeButtonText) return;
+    
+    const isAr = lang === 'ar';
     const refSite = getRefererSite();
     const displayName = domainName || (refSite ? refSite.label : null);
     
+    homeButtonWrapper.style.display = 'block';
     if (displayName) {
-        homeButtonWrapper.style.display = 'block';
         homeButtonText.textContent = isAr 
             ? `الصفحة الرئيسية لموقع ${displayName}`
             : `Home ${displayName} website`;
     } else {
-        homeButtonWrapper.style.display = 'block';
         homeButtonText.textContent = isAr 
             ? 'العودة للصفحة الرئيسية'
             : 'Return to home page';
     }
 };
 
-// Initialize App
-const init = async () => {
-    // Check if there are any URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // If no parameters at all, redirect to matches page
-    if (!urlParams.has('m') && urlParams.toString() === '') {
-        window.location.href = '/Watches.html';
-        return;
-    }
-    
-    // Initialize theme first
-    initTheme();
-    
-    // Set current year
-    document.getElementById('currentYear').textContent = new Date().getFullYear();
-    
-    // Get match ID and language from URL parameters
-    const matcheId = getUrlParam('m');
-    const lang = getUrlParam('lang') || 'en';
-    const domainName = getUrlParam('domain_name') || null;
-    const isAr = lang === 'ar';
-    
-    // Set RTL for Arabic
-    if (isAr) {
-        document.documentElement.setAttribute('dir', 'rtl');
-        document.body.setAttribute('dir', 'rtl');
-    } else {
-        document.documentElement.setAttribute('dir', 'ltr');
-        document.body.setAttribute('dir', 'ltr');
-    }
-    
-    // Update logo
-    updateLogo(lang, domainName);
-    
-    // Update home button
-    updateHomeButton(lang, domainName);
-    
-    // Load marketing content and update modal language
-    loadMarketingContent(lang);
-    updateModalLanguage(lang);
-    
-    if (!matcheId || isNaN(matcheId)) {
-        // Redirect to matches page if match ID is invalid
-        window.location.href = '/matches.html';
-        return;
-    }
-    
-    try {
-        // Fetch match data
-        matchData = await fetchMatchData(matcheId, lang);
-        
-        if (!matchData || !matchData.home_en) {
-            console.log('🔴 Match not found. Redirecting to soccer-streams.io...');
-            window.location.href = CONFIG.REDIRECT_URL;
-            return;
-        }
-        
-        // Check if match is inactive - redirect immediately
-        if (matchData.active == 0) {
-            console.log('🔴 Match is inactive (active=0). Redirecting to soccer-streams.io...');
-            window.location.href = CONFIG.REDIRECT_URL;
-            return;
-        }
-        
-        // Update UI with match info
-        updateMatchInfo(matchData, lang);
-        
-        // Check if match is active and has channels
-        if (matchData.active == 1 && matchData.has_channels == 1 && matchData.channels && matchData.channels.length > 0) {
-            initEdges(matchData);
-            createServerButtons(matchData.channels);
-        } else {
-            const refSite = getRefererSite();
-            if (refSite) {
-                window.location.href = refSite.url;
-            } else {
-                window.location.href = CONFIG.REDIRECT_URL;
-            }
-        }
-    } catch (error) {
-        console.error('Initialization error:', error);
-        showError('Error loading match data. Please refresh the page.');
-    }
-};
+// ==========================================
+// 9. Marketing & Modals
+// ==========================================
 
-// Responsive height adjustment
-const adjustPlayerHeight = () => {
-    const playerContainer = document.getElementById('playerContainer');
-    const isMobile = window.innerWidth <= 768;
-    playerContainer.style.height = isMobile ? '400px' : '500px';
-};
-
-window.addEventListener('resize', adjustPlayerHeight);
-
-// Toggle Marketing Section
 const toggleMarketing = () => {
     const content = document.getElementById('marketingContent');
     const toggle = document.getElementById('marketingToggle');
-    
-    content.classList.toggle('active');
-    toggle.classList.toggle('active');
+    if (content) content.classList.toggle('active');
+    if (toggle) toggle.classList.toggle('active');
 };
 
-// Marketing Section Content
 const loadMarketingContent = (lang = 'en') => {
     const isAr = lang === 'ar';
     const marketingSection = document.getElementById('marketingSection');
@@ -610,12 +568,10 @@ const loadMarketingContent = (lang = 'en') => {
     
     if (!marketingContentInner) return;
     
-    // Set direction based on language
     if (marketingSection) {
         marketingSection.style.direction = isAr ? 'rtl' : 'ltr';
     }
     
-    // Update header text
     const headerText = document.getElementById('marketingHeaderText');
     if (headerText) {
         headerText.textContent = isAr 
@@ -629,7 +585,7 @@ const loadMarketingContent = (lang = 'en') => {
             <div class="subtitle">
                 كل رابط تنشره لصفحة بث خارجية = خسارة زيارات (ذهاب بلا عودة ) + صفر SEO + بدون علامة تجارية<br>
                 أنت حرفياً تتخلص من زوارك الى الأبد و تبيعهم بالمجان لمواقع أخرى بلا عودة  ( تخسر علامتك التجارية و اسم موقعك )<br><br>
-                <strong style="color: var(--text-primary);">لماذا لا ترسل الزوار لمشاهدة المباريات و  العودة بعدها لموقعك ؟</strong><br>
+                <strong style="color: var(--text-primary);">لماذا لا ترسل الزوار لمشاهدة المباريات و العودة بعدها لموقعك ؟</strong><br>
                 <strong style="color: var(--text-primary);">لماذا لا تحصل على مداخيل اضافية من زوارك و الاحتفاظ بقوة علامتك التجارية و اسم موقعك ؟</strong>
             </div>
             
@@ -760,14 +716,12 @@ const loadMarketingContent = (lang = 'en') => {
     }
 };
 
-// Modal Functions
 const openModal = (modalId) => {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
         
-        // Set default language for stream link modal
         if (modalId === 'streamLinkModal') {
             const currentLang = getUrlParam('lang') || 'en';
             const streamPageLangSelect = document.getElementById('streamPageLangSelect');
@@ -784,23 +738,27 @@ const closeModal = (modalId) => {
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
         
-        // Reset forms
         if (modalId === 'subdomainModal') {
-            document.getElementById('domainInput').value = '';
-            document.getElementById('subdomainResult').classList.remove('show');
+            const domainInput = document.getElementById('domainInput');
+            const subdomainResult = document.getElementById('subdomainResult');
+            if(domainInput) domainInput.value = '';
+            if(subdomainResult) subdomainResult.classList.remove('show');
         } else if (modalId === 'streamLinkModal') {
-            document.getElementById('streamDomainInput').value = '';
-            document.getElementById('domainNameInput').value = '';
+            const streamDomainInput = document.getElementById('streamDomainInput');
+            const domainNameInput = document.getElementById('domainNameInput');
+            const streamLinkResult = document.getElementById('streamLinkResult');
+            
+            if(streamDomainInput) streamDomainInput.value = '';
+            if(domainNameInput) domainNameInput.value = '';
+            
             const streamPageLangSelect = document.getElementById('streamPageLangSelect');
-            if (streamPageLangSelect) {
-                streamPageLangSelect.value = 'en';
-            }
-            document.getElementById('streamLinkResult').classList.remove('show');
+            if (streamPageLangSelect) streamPageLangSelect.value = 'en';
+            
+            if(streamLinkResult) streamLinkResult.classList.remove('show');
         }
     }
 };
 
-// Close modal when clicking outside
 window.onclick = (event) => {
     if (event.target.classList.contains('modal')) {
         event.target.style.display = 'none';
@@ -808,11 +766,12 @@ window.onclick = (event) => {
     }
 };
 
-// Generate Subdomain
 const generateSubdomain = () => {
     const lang = getUrlParam('lang') || 'en';
     const isAr = lang === 'ar';
     const domainInput = document.getElementById('domainInput');
+    if (!domainInput) return;
+    
     const domain = domainInput.value.trim().toLowerCase();
     
     if (!domain) {
@@ -820,43 +779,44 @@ const generateSubdomain = () => {
         return;
     }
     
-    // Clean domain (remove http://, https://, www.)
     let cleanDomain = domain
         .replace(/^https?:\/\//, '')
         .replace(/^www\./, '')
         .replace(/\/$/, '');
     
-    // Convert dots to dashes
     const subdomain = 'xyz' + cleanDomain.replace(/\./g, '-');
     const fullSubdomain = `${subdomain}.goalz.zip`;
     
-    // Show result
     const resultBox = document.getElementById('subdomainResult');
     const resultValue = document.getElementById('resultValue');
-    resultValue.textContent = fullSubdomain;
-    resultBox.classList.add('show');
     
-    // Update button text
+    if (resultValue) resultValue.textContent = fullSubdomain;
+    if (resultBox) resultBox.classList.add('show');
+    
     const copyBtn = document.getElementById('copyBtn');
-    copyBtn.textContent = isAr ? 'نسخ إلى الحافظة' : 'Copy to Clipboard';
-    copyBtn.classList.remove('copied');
+    if (copyBtn) {
+        copyBtn.textContent = isAr ? 'نسخ إلى الحافظة' : 'Copy to Clipboard';
+        copyBtn.classList.remove('copied');
+    }
     
-    // Auto-scroll to result after a brief delay
     setTimeout(() => {
-        resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (resultBox) resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 100);
 };
 
-// Generate Stream Link
 const generateStreamLink = () => {
     const pageLang = getUrlParam('lang') || 'en';
     const isAr = pageLang === 'ar';
     const matcheId = getUrlParam('m');
+    
     const domainInput = document.getElementById('streamDomainInput');
-    const domain = domainInput.value.trim().toLowerCase();
     const domainNameInput = document.getElementById('domainNameInput');
-    const domainName = domainNameInput.value.trim();
     const streamPageLangSelect = document.getElementById('streamPageLangSelect');
+    
+    if (!domainInput) return;
+    
+    const domain = domainInput.value.trim().toLowerCase();
+    const domainName = domainNameInput ? domainNameInput.value.trim() : '';
     const streamPageLang = streamPageLangSelect ? streamPageLangSelect.value : 'en';
     
     if (!domain) {
@@ -869,43 +829,41 @@ const generateStreamLink = () => {
         return;
     }
     
-    // Clean domain
     let cleanDomain = domain
         .replace(/^https?:\/\//, '')
         .replace(/^www\./, '')
         .replace(/\/$/, '');
     
-    // Convert dots to dashes
     const subdomain = 'xyz' + cleanDomain.replace(/\./g, '-');
     let streamLink = `https://${subdomain}.goalz.zip/?m=${matcheId}&lang=${streamPageLang}`;
     
-    // Add domain_name parameter if provided
     if (domainName) {
         streamLink += `&domain_name=${encodeURIComponent(domainName)}`;
     }
     
-    // Show result
     const resultBox = document.getElementById('streamLinkResult');
     const resultValue = document.getElementById('streamResultValue');
-    resultValue.textContent = streamLink;
-    resultBox.classList.add('show');
     
-    // Update button text
+    if (resultValue) resultValue.textContent = streamLink;
+    if (resultBox) resultBox.classList.add('show');
+    
     const copyBtn = document.getElementById('copyStreamBtn');
-    copyBtn.textContent = isAr ? 'نسخ إلى الحافظة' : 'Copy to Clipboard';
-    copyBtn.classList.remove('copied');
+    if (copyBtn) {
+        copyBtn.textContent = isAr ? 'نسخ إلى الحافظة' : 'Copy to Clipboard';
+        copyBtn.classList.remove('copied');
+    }
     
-    // Auto-scroll to result after a brief delay to allow the result box to render
     setTimeout(() => {
-        resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if(resultBox) resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 100);
 };
 
-// Copy to Clipboard for Modals
 const copyModalContent = async (elementId, button) => {
     const lang = getUrlParam('lang') || 'en';
     const isAr = lang === 'ar';
     const element = document.getElementById(elementId);
+    if (!element) return;
+    
     const text = element.textContent;
     
     try {
@@ -922,40 +880,130 @@ const copyModalContent = async (elementId, button) => {
     }
 };
 
-// Update modal content based on language
 const updateModalLanguage = (lang = 'en') => {
     const isAr = lang === 'ar';
     
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    };
+    
+    const setPlaceholder = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.placeholder = text;
+    };
+
     // Subdomain Modal
-    document.getElementById('subdomainModalTitle').textContent = isAr ? 'أنشئ نطاقك الفرعي' : 'Generate Your Subdomain';
-    document.getElementById('subdomainModalSubtitle').textContent = isAr ? 'أدخل نطاق موقعك للحصول على نطاقك الفرعي المخصص' : 'Enter your website domain to get your custom subdomain';
-    document.getElementById('domainLabel').textContent = isAr ? 'نطاق موقعك:' : 'Your Website Domain:';
-    document.getElementById('domainInput').placeholder = isAr ? 'example.com أو example.net' : 'example.com or example.net';
-    document.getElementById('domainHint').textContent = isAr ? 'أدخل بدون http:// أو www' : 'Enter without http:// or www';
-    document.getElementById('resultLabel').textContent = isAr ? 'نطاقك الفرعي المخصص:' : 'Your Custom Subdomain:';
-    document.getElementById('copyBtn').textContent = isAr ? 'نسخ إلى الحافظة' : 'Copy to Clipboard';
-    document.getElementById('cancelBtn1').textContent = isAr ? 'إلغاء' : 'Cancel';
-    document.getElementById('generateBtn').textContent = isAr ? 'أنشئ النطاق الفرعي' : 'Generate Subdomain';
+    setText('subdomainModalTitle', isAr ? 'أنشئ نطاقك الفرعي' : 'Generate Your Subdomain');
+    setText('subdomainModalSubtitle', isAr ? 'أدخل نطاق موقعك للحصول على نطاقك الفرعي المخصص' : 'Enter your website domain to get your custom subdomain');
+    setText('domainLabel', isAr ? 'نطاق موقعك:' : 'Your Website Domain:');
+    setPlaceholder('domainInput', isAr ? 'example.com أو example.net' : 'example.com or example.net');
+    setText('domainHint', isAr ? 'أدخل بدون http:// أو www' : 'Enter without http:// or www');
+    setText('resultLabel', isAr ? 'نطاقك الفرعي المخصص:' : 'Your Custom Subdomain:');
+    setText('copyBtn', isAr ? 'نسخ إلى الحافظة' : 'Copy to Clipboard');
+    setText('cancelBtn1', isAr ? 'إلغاء' : 'Cancel');
+    setText('generateBtn', isAr ? 'أنشئ النطاق الفرعي' : 'Generate Subdomain');
+    
     // Stream Link Modal
-    document.getElementById('streamLinkModalTitle').textContent = isAr ? 'أنشئ رابط البث' : 'Generate Stream Link';
-    document.getElementById('streamLinkModalSubtitle').textContent = isAr ? 'أنشئ رابط بث لهذه المباراة مع نطاقك الفرعي' : 'Create a stream link for this match with your subdomain';
-    document.getElementById('streamDomainLabel').textContent = isAr ? 'نطاق موقعك:' : 'Your Website Domain:';
-    document.getElementById('streamDomainInput').placeholder = isAr ? 'example.com أو example.net' : 'example.com or example.net';
-    document.getElementById('streamDomainHint').textContent = isAr ? 'أدخل بدون http:// أو www' : 'Enter without http:// or www';
-    document.getElementById('domainNameLabel').textContent = isAr ? 'اسم موقعك (اختياري - لتحسين SEO):' : 'Website Name (Optional - for SEO):';
-    document.getElementById('domainNameInput').placeholder = isAr ? 'يلا شوت' : 'Yalla Shoot';
-    document.getElementById('domainNameHint').textContent = isAr ? 'اسم علامتك التجارية سيظهر فوق المشغل مع رابط follow backlink' : 'Your brand name will appear above the player with a follow backlink';
-    document.getElementById('streamPageLangLabel').textContent = isAr ? 'لغة صفحة البث:' : 'Stream Page Language:';
-    document.getElementById('streamPageLangHint').textContent = isAr ? 'اللغة التي ستظهر بها صفحة البث' : 'Language for the streaming page interface';
-    document.getElementById('streamResultLabel').textContent = isAr ? 'رابط البث الخاص بك:' : 'Your Stream Link:';
-    document.getElementById('copyStreamBtn').textContent = isAr ? 'نسخ إلى الحافظة' : 'Copy to Clipboard';
-    document.getElementById('howToUseLabel').textContent = isAr ? 'كيفية الاستخدام:' : 'How to use:';
-    document.getElementById('howToUseText').textContent = isAr 
+    setText('streamLinkModalTitle', isAr ? 'أنشئ رابط البث' : 'Generate Stream Link');
+    setText('streamLinkModalSubtitle', isAr ? 'أنشئ رابط بث لهذه المباراة مع نطاقك الفرعي' : 'Create a stream link for this match with your subdomain');
+    setText('streamDomainLabel', isAr ? 'نطاق موقعك:' : 'Your Website Domain:');
+    setPlaceholder('streamDomainInput', isAr ? 'example.com أو example.net' : 'example.com or example.net');
+    setText('streamDomainHint', isAr ? 'أدخل بدون http:// أو www' : 'Enter without http:// or www');
+    setText('domainNameLabel', isAr ? 'اسم موقعك (اختياري - لتحسين SEO):' : 'Website Name (Optional - for SEO):');
+    setPlaceholder('domainNameInput', isAr ? 'يلا شوت' : 'Yalla Shoot');
+    setText('domainNameHint', isAr ? 'اسم علامتك التجارية سيظهر فوق المشغل مع رابط follow backlink' : 'Your brand name will appear above the player with a follow backlink');
+    setText('streamPageLangLabel', isAr ? 'لغة صفحة البث:' : 'Stream Page Language:');
+    setText('streamPageLangHint', isAr ? 'اللغة التي ستظهر بها صفحة البث' : 'Language for the streaming page interface');
+    setText('streamResultLabel', isAr ? 'رابط البث الخاص بك:' : 'Your Stream Link:');
+    setText('copyStreamBtn', isAr ? 'نسخ إلى الحافظة' : 'Copy to Clipboard');
+    setText('howToUseLabel', isAr ? 'كيفية الاستخدام:' : 'How to use:');
+    setText('howToUseText', isAr 
         ? 'هذا الرابط جاهز للمشاركة! يتضمن معرف المباراة واللغة المحددة. إذا أضفت اسم موقعك، سيظهر بوضوح فوق المشغل مع رابط SEO مجاني!'
-        : 'This link is ready to share! It includes the match ID and selected language. If you added your website name, it will be prominently displayed above the player with a free SEO backlink!';
-    document.getElementById('cancelBtn2').textContent = isAr ? 'إلغاء' : 'Cancel';
-    document.getElementById('generateStreamBtn').textContent = isAr ? 'أنشئ الرابط' : 'Generate Link';
+        : 'This link is ready to share! It includes the match ID and selected language. If you added your website name, it will be prominently displayed above the player with a free SEO backlink!');
+    setText('cancelBtn2', isAr ? 'إلغاء' : 'Cancel');
+    setText('generateStreamBtn', isAr ? 'أنشئ الرابط' : 'Generate Link');
 };
+
+// ==========================================
+// 10. Core Initialization
+// ==========================================
+
+const init = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (!urlParams.has('m') && urlParams.toString() === '') {
+        window.location.href = '/match.html';
+        return;
+    }
+    
+    initTheme();
+    
+    const yearEl = document.getElementById('currentYear');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+    
+    const matcheId = getUrlParam('m');
+    const lang = getUrlParam('lang') || 'en';
+    const domainName = getUrlParam('domain_name') || null;
+    const isAr = lang === 'ar';
+    
+    if (isAr) {
+        document.documentElement.setAttribute('dir', 'rtl');
+        document.body.setAttribute('dir', 'rtl');
+    } else {
+        document.documentElement.setAttribute('dir', 'ltr');
+        document.body.setAttribute('dir', 'ltr');
+    }
+    
+    updateLogo(lang, domainName);
+    updateHomeButton(lang, domainName);
+    loadMarketingContent(lang);
+    updateModalLanguage(lang);
+    
+    if (!matcheId || isNaN(matcheId)) {
+        window.location.href = '/matches.html';
+        return;
+    }
+    
+    try {
+        matchData = await fetchMatchData(matcheId, lang);
+        
+        if (!matchData || !matchData.home_en) {
+            console.log('🔴 Match not found. Redirecting to backup URL...');
+            window.location.href = CONFIG.REDIRECT_URL;
+            return;
+        }
+        
+        if (matchData.active == 0) {
+            console.log('🔴 Match is inactive (active=0). Redirecting...');
+            window.location.href = CONFIG.REDIRECT_URL;
+            return;
+        }
+        
+        updateMatchInfo(matchData, lang);
+        
+        if (matchData.active == 1 && matchData.has_channels == 1 && matchData.channels && matchData.channels.length > 0) {
+            initEdges(matchData);
+            createServerButtons(matchData.channels);
+        } else {
+            const refSite = getRefererSite();
+            window.location.href = refSite ? refSite.url : CONFIG.REDIRECT_URL;
+        }
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showError('Error loading match data. Please refresh the page.');
+    }
+};
+
+// Responsive height adjustment with Debounce for performance
+const adjustPlayerHeight = debounce(() => {
+    const playerContainer = document.getElementById('playerContainer');
+    if (!playerContainer) return;
+    const isMobile = window.innerWidth <= 768;
+    playerContainer.style.height = isMobile ? '400px' : '500px';
+}, 150);
+
+window.addEventListener('resize', adjustPlayerHeight);
 
 // Start app when DOM is ready
 if (document.readyState === 'loading') {
@@ -963,55 +1011,4 @@ if (document.readyState === 'loading') {
 } else {
     init();
 }
-    document.addEventListener("DOMContentLoaded", () => {
-    // الكلمات المفتاحية الشائعة لروابط ومعرفات الإعلانات
-    const adKeywords = ['ad', 'ads', 'doubleclick', 'banner', 'popup', 'sponsor'];
-
-    // دالة للتحقق مما إذا كان العنصر إعلاناً
-    const isAdElement = (element) => {
-        if (!element || element.nodeType !== 1) return false;
-        
-        const id = (element.id || '').toLowerCase();
-        const className = (element.className || '').toString().toLowerCase();
-        const src = (element.src || '').toLowerCase();
-
-        return adKeywords.some(keyword => 
-            id.includes(keyword) || 
-            className.includes(keyword) || 
-            (element.tagName === 'IFRAME' && src.includes(keyword))
-        );
-    };
-
-    // إزالة الإعلانات الموجودة عند تحميل الصفحة
-    document.querySelectorAll('*').forEach(el => {
-        if (isAdElement(el)) {
-            el.remove();
-        }
-    });
-
-    // مراقبة الصفحة لاكتشاف أي إعلانات تضاف لاحقاً وحذفها فوراً
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-                if (isAdElement(node)) {
-                    node.remove();
-                } else if (node.querySelectorAll) {
-                    // البحث داخل العناصر الجديدة المضافة
-                    node.querySelectorAll('*').forEach(child => {
-                        if (isAdElement(child)) {
-                            child.remove();
-                        }
-                    });
-                }
-            });
-        });
-    });
-
-    // تشغيل المراقبة على كامل جسم الصفحة
-    observer.observe(document.body, { 
-        childList: true, 
-        subtree: true 
-    });
-});
-
-</body>
+</div>

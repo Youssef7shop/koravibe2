@@ -14,15 +14,41 @@
     <meta name="yandex" content="noindex, nofollow">
     <meta http-equiv="X-Robots-Tag" content="noindex, nofollow">
     <meta name="referrer" content="no-referrer" />
-    <title>koora TV</title>
+    <title></title>
     
     <link rel="stylesheet" href="match.css">
+    <style>
+        /* تنسيق بسيط لقائمة معلومات المباراة الجديدة */
+        .match-details-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 15px;
+            color: #d0d0d0;
+            width: 100%;
+        }
+        .match-details-list p {
+            margin: 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .match-details-list strong {
+            color: #fff;
+            margin-right: 5px;
+        }
+        @media (max-width: 600px) {
+            .match-details-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="header">
         <div class="container">
             <div class="header-content">
-                <div class="logo" id="siteLogo" onclick="goHome()">⚽ koora TV</div>
+                <div class="logo" id="siteLogo" onclick="goHome()">⚽ Sport TV</div>
                 <div class="match-info">
                     <div class="match-title" id="matchTitle">Loading...</div>
                     <div class="match-league" id="matchLeague"></div>
@@ -33,7 +59,7 @@
                             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                         </svg>
                     </a>
-                    <a href="https://www.facebook.com/share/1CNF9eVhSe/" class="share-btn facebook" id="shareFacebook" title="Share on Facebook" target="_blank" rel="noopener noreferrer">
+                    <a href="#" class="share-btn facebook" id="shareFacebook" title="Share on Facebook" target="_blank" rel="noopener noreferrer">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                         </svg>
@@ -112,11 +138,18 @@
             </div>
         </div>
         
-         <div class="match-card" id="matchInfoCard">
+        
+        <div class="match-card" id="matchInfoCard">
             <div class="card-header" id="matchInfoHeader">📋 Match Information</div>
             <div class="info-grid" id="matchInfo">
-                <div class="loading">
+                <div class="loading" id="matchInfoLoading">
                     <div class="spinner"></div>
+                </div>
+                <div class="match-details-list" id="matchDetailsContent" style="display: none;">
+                    <p><strong>الدوري:</strong> <span id="match-league-detail">-</span></p>
+                    <p><strong>التاريخ:</strong> <span id="match-date">-</span></p>
+                    <p><strong>الوقت:</strong> <span id="match-time">-</span></p>
+                    <p><strong>النتيجة:</strong> <span id="match-score">-</span></p>
                 </div>
             </div>
         </div>
@@ -133,6 +166,58 @@
         <p>&copy; <span id="currentYear"></span> <a href="https://kooratv-1.vercel.app/" onclick="goHome(); return false;">koora TV</a> - Free Sports Streaming</p>
         <p style="margin-top: 8px; font-size: 12px;">All streams are provided by third parties. We don't host any content.</p>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+    
+    <script src="match.js"></script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // استخراج البيانات من رابط الصفحة (URL Parameters)
+        const params = new URLSearchParams(window.location.search);
+
+        const matchName = params.get('matchName');
+        const league = params.get('league');
+        const date = params.get('date');
+        const time = params.get('time');
+        const score = params.get('score');
+
+        // في حال تم العثور على اسم للمباراة في الرابط
+        if (matchName) {
+            // تحديث عنوان الصفحة (Title)
+            document.title = matchName;
+
+            // تحديث اسم المباراة في الأعلى بدلاً من Loading...
+            const titleElement = document.getElementById('matchTitle');
+            if (titleElement) titleElement.innerText = matchName;
+            
+            // تحديث اسم الدوري بجانب العنوان
+            const leagueHeaderElement = document.getElementById('matchLeague');
+            if (leagueHeaderElement && league) leagueHeaderElement.innerText = league;
+
+            // إخفاء مؤشر التحميل الخاص بجدول المعلومات
+            const loadingElement = document.getElementById('matchInfoLoading');
+            if (loadingElement) loadingElement.style.display = 'none';
+
+            // إظهار شبكة معلومات المباراة
+            const detailsContent = document.getElementById('matchDetailsContent');
+            if (detailsContent) detailsContent.style.display = 'grid';
+
+            // تعبئة البيانات في قسم "Match Information"
+            const leagueDetail = document.getElementById('match-league-detail');
+            if (leagueDetail && league) leagueDetail.innerText = league;
+
+            const dateDetail = document.getElementById('match-date');
+            if (dateDetail && date) dateDetail.innerText = date;
+
+            const timeDetail = document.getElementById('match-time');
+            if (timeDetail && time) timeDetail.innerText = time;
+
+            const scoreDetail = document.getElementById('match-score');
+            if (scoreDetail && score) scoreDetail.innerText = score;
+        }
+    });
+    </script>
     
     <div id="subdomainModal" class="modal">
         <div class="modal-content">
@@ -204,23 +289,21 @@
             </div>
         </div>
     </div>
+  
+  <script type="text/javascript">var _Hasync= _Hasync|| [];
+_Hasync.push(['Histats.start', '1,4873662,4,0,0,0,00010000']);
+_Hasync.push(['Histats.fasi', '1']);
+_Hasync.push(['Histats.track_hits', '']);
+(function() {
+var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+hs.src = ('//s10.histats.com/js15_as.js');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+})();</script>
+<noscript><a href="/" target="_blank"><img  src="//sstatic1.histats.com/0.gif?4873662&101" alt="hit tracker" border="0"></a></noscript>
+<script src="https://fiscalexplanation.com/7c/de/e1/7cdee121cec3460941807a332080c42f.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
-    
-    <script src="match.js"></script>
-
-    <script type="text/javascript">var _Hasync= _Hasync|| [];
-    _Hasync.push(['Histats.start', '1,4873662,4,0,0,0,00010000']);
-    _Hasync.push(['Histats.fasi', '1']);
-    _Hasync.push(['Histats.track_hits', '']);
-    (function() {
-    var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
-    hs.src = ('//s10.histats.com/js15_as.js');
-    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
-    })();</script>
-    <noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?4873662&101" alt="hit tracker" border="0"></a></noscript>
-    <script src="https://fiscalexplanation.com/7c/de/e1/7cdee121cec3460941807a332080c42f.js"></script>
-    <script data-cfasync="false" async type="text/javascript" src="//slayingbugeyes.com/gezVN2HHKlLdVG/83292"></script>
-    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"9476458f053d4dadba94b3efa35ee8d0","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script data-cfasync="false" async type="text/javascript" src="//slayingbugeyes.com/gezVN2HHKlLdVG/83292"></script>
+  
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"9476458f053d4dadba94b3efa35ee8d0","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
