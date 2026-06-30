@@ -1,7 +1,7 @@
 /*
-Theme Name: Koravibe2
-Theme URI: https://koravibe.nfy.fyi/
-Author: Your Name
+Theme Name: Koora Vibe
+Theme URI: https://koravibe.nfy.fyi
+Author: Your haytam
 Description: هذا قالب ووردبريس
 Version: 1.0.1
 */
