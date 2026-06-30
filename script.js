@@ -1,10 +1,17 @@
+/*
+Theme Name: Koravibe2
+Theme URI: https://koravibe.nfy.fyi/
+Author: Your Name
+Description: هذا قالب ووردبريس
+Version: 1.0.1
+*/
 (function() {
     'use strict';
     
-    var API      = 'https://ws.kora-api.space/';
+   var API      = 'https://ws.kora-api.space/';
     var TIMG     = 'https://cdn.kora-api.space/uploads/team/';
     var LIMG     = 'https://cdn.kora-api.space/uploads/league/';
-    var FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect fill='%23fff5f5' width='44' height='44' rx='6'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='22'%3E⚽%3C/text%3E%3C/svg%3E";
+    var FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect fill='%23fff5f5' width='44' height='44' rx='6'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='22'%3E⚽%3C/text%3E%3C/svg%3E"
 
     // تحديث التاريخ والوقت
     function updateDateDisplay() {
@@ -37,7 +44,7 @@
     function card(m) {
         var realStatus = getRealStatus(m);
         var st = status(realStatus);
-        var link = 'match.html?id=' + m.id;
+        var link ='match.html?id='+ m.id;
 
         var center;
         // عرض النتيجة إذا كانت مباشرة (1) أو انتهت (2)
