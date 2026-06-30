@@ -18,8 +18,8 @@ Version: 1.0.1
         const dateElement = document.getElementById('current-date');
         if (dateElement) {
             const now = new Date();
-            const dateString = now.toLocaleDateString('fr-FR', { weekday: 'long', month: 'long', day: 'numeric' });
-            const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            const dateString = now.toLocaleDateString('er-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            const timeString = now.toLocaleTimeString('er-US', { hour: '2-digit', minute: '2-digit' });
             dateElement.textContent = dateString + ' - ' + timeString;
         }
     }
@@ -104,8 +104,8 @@ function updateDateDisplay() {
     const dateElement = document.getElementById('current-date');
     if (dateElement) {
         const options = { weekday: 'long', month: 'long', day: 'numeric' };
-        // 'fr-FR' لعرض التاريخ باللغة الفرنسية
-        const today = new Date().toLocaleDateString('fr-FR', options);
+        // 'en-US' لعرض التاريخ باللغة الإنجليزية
+        const today = new Date().toLocaleDateString('en-US', options);
         dateElement.textContent = today;
     }
 }
