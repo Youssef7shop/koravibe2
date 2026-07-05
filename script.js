@@ -43,8 +43,7 @@
         }
         return 0;
     }
-
-    function card(m) {
+function card(m) {
         var realStatus = getRealStatus(m);
         var st = status(realStatus);
         
@@ -57,12 +56,6 @@
             center = '<div class="score">' + sc + '</div>';
         } else {
             center = '<div class="kick-time">' + m.time + '</div><div class="kick-label">انطلاق</div>';
-        }
-        
-        // التعديل: الزر يظهر للمباريات القادمة (0) والمباشرة (1) فقط
-        var foot = '';
-        if (realStatus !== 2) { 
-            foot = '<a href="' + link + '" class="card-foot">شاهد على كورة تيفي ◀</a>';
         }
 
         var inner = 
