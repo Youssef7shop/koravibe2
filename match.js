@@ -34,8 +34,8 @@
 const CONFIG = {
   matchTitle: "⚽ بث مباشر للمباراة",
   topLinks: {
-    link1: { text: "البث الرئيسي", url: "https://aznotv.com/main" },
-    link2: { text: "AZNO TV", url: "https://aznotv.com" }
+    link1: { text: "البث الرئيسي", url: "https://kooratv-1.vercel.app" },
+    link2: { text: "koora TV", url: "https://kooratv-1.vercel.app" }
   },
   servers: {
     server1: "",
