@@ -34,7 +34,7 @@
 const CONFIG = {
   matchTitle: "⚽ بث مباشر للمباراة",
   topLinks: {
-    link1: { text: "البث الرئيسي", url: "https://kooratv-1.vercel.app" },
+    link1: { text: "البث الرئيسي", url: "https://kooratv-1.vercel.app/main" },
     link2: { text: "koora TV", url: "https://kooratv-1.vercel.app" }
   },
   servers: {
