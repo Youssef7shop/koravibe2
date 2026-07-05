@@ -46,7 +46,7 @@ Version: 1.0.1
         var st = status(realStatus);
         
         // التعديل تم هنا: توجيه مباشر إلى Match.html
-        var link = 'Match.html';
+        var link = 'match.html';
 
         var center;
         // عرض النتيجة إذا كانت مباشرة (1) أو انتهت (2)
