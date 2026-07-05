@@ -44,7 +44,7 @@ Version: 1.0.1
     function card(m) {
         var realStatus = getRealStatus(m);
         var st = status(realStatus);
-        var link ='match.html?id='+ m.id;
+        var link = 'Match.html?id=' + m.id;
 
         var center;
         // عرض النتيجة إذا كانت مباشرة (1) أو انتهت (2)
