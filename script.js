@@ -46,8 +46,6 @@
 function card(m) {
         var realStatus = getRealStatus(m);
         var st = status(realStatus);
-        
-        // التعديل تم هنا: توجيه مباشر إلى Match.html
         var link = 'Match.html';
 
         var center;
