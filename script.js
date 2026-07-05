@@ -37,14 +37,14 @@ Version: 1.0.1
     }
 
     // تم إزالة التحقق من الوقت: ستعتمد الحالة الآن على بيانات السيرفر فقط
-    function getRealStatus(m) {
+    function getRealStatus(m) 
         return parseInt(m.status);
     }
 
     function card(m) {
         var realStatus = getRealStatus(m);
         var st = status(realStatus);
-        var link = 'Match.html?id=' + m.id;
+        var link = 'Match.html 
 
         var center;
         // عرض النتيجة إذا كانت مباشرة (1) أو انتهت (2)
