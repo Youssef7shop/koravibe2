@@ -5,115 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>بث مباشر - koora TV</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --red: #c0392b;
-    --dark-red: #922b21;
-    --bg: #0d0d0d;
-    --surface: #1a1a1a;
-    --border: #2a2a2a;
-    --text: #f0f0f0;
-    --muted: #888;
-    --green: #2ecc71;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); font-family: 'Cairo', sans-serif; color: var(--text); min-height: 100vh; }
-
-  .topbar { background: var(--red); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; height: 50px; box-shadow: 0 2px 12px rgba(192,57,43,0.5); }
-  .topbar a { color: #fff; text-decoration: none; font-weight: 700; font-size: 1rem; padding: 6px 18px; border-radius: 4px; transition: background 0.2s; }
-  .topbar a:hover { background: rgba(255,255,255,0.15); }
-
-  .page-wrap { max-width: 1400px; margin: 0 auto; padding: 24px 16px; }
-
-  .match-title { text-align: center; margin-bottom: 14px; }
-  .match-title h1 { font-size: 1.4rem; font-weight: 900; color: #fff; }
-  .match-title p { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
-
-  .live-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(192,57,43,0.15); border: 1px solid var(--red); color: #fff; font-size: 0.78rem; font-weight: 700; padding: 4px 14px; border-radius: 20px; margin-bottom: 14px; }
-  .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 1.4s ease-in-out infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
-
-  .server-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: center; }
-  .server-btn { background: var(--surface); border: 1.5px solid var(--border); color: var(--text); font-family: 'Cairo', sans-serif; font-size: 0.95rem; font-weight: 700; padding: 9px 26px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
-  .server-btn:hover { border-color: var(--red); background: rgba(192,57,43,0.12); color: #fff; }
-  .server-btn.active { background: var(--red); border-color: var(--red); color: #fff; box-shadow: 0 4px 18px rgba(192,57,43,0.4); }
-  .server-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
-  .refresh-mini-btn { background: rgba(192,57,43,0.15); border: 1.5px solid var(--red); color: #fff; font-family: 'Cairo', sans-serif; font-size: 0.85rem; font-weight: 700; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
-  .refresh-mini-btn:hover { background: var(--red); }
-
-  .player-chat-row { display: flex; gap: 14px; align-items: stretch; direction: ltr; }
-
-  .video-wrapper { flex: 1; position: relative; background: #000; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border); box-shadow: 0 8px 40px rgba(0,0,0,0.7); aspect-ratio: 16/9; }
-  .server-section { width: 100%; height: 100%; display: none; }
-  .server-section.active { display: block; }
-  .server-section iframe { display: block; width: 100%; height: 100%; border: none; }
-  .live-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #1a0a0a 0%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 10; transition: opacity 0.4s; direction: rtl; }
-  .live-overlay.hidden { opacity: 0; pointer-events: none; }
-  .play-icon { width: 72px; height: 72px; background: rgba(192,57,43,0.85); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(192,57,43,0.6); animation: glow 2s ease-in-out infinite; cursor: pointer; }
-  @keyframes glow { 0%,100% { box-shadow: 0 0 30px rgba(192,57,43,0.5); } 50% { box-shadow: 0 0 60px rgba(192,57,43,0.9); } }
-  .play-icon svg { width: 32px; height: 32px; margin-right: -4px; }
-  .overlay-live { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 700; color: #fff; }
-  .overlay-live-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; animation: pulse 1.4s infinite; }
-  .overlay-hint { color: var(--muted); font-size: 0.82rem; }
-
-  /* TUTORIAL VIDEO */
-  .tutorial-sidebar { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; background: #000; border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; direction: rtl; align-self: stretch; }
-  .tutorial-header { background: #111; padding: 11px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1.5px solid var(--border); flex-shrink: 0; }
-  .tutorial-header .title { font-weight: 700; font-size: 0.92rem; color: #fff; }
-  .tutorial-video-wrap { flex: 1; position: relative; }
-  .tutorial-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
-
-  .footer { text-align: center; padding: 22px 0 14px; color: var(--muted); font-size: 0.78rem; }
-
-  @media (max-width: 900px) {
-    .player-chat-row { flex-direction: column; }
-    .tutorial-sidebar { width: 100%; height: 320px; }
-    .server-btn { padding: 8px 14px; font-size: 0.85rem; }
-    .match-title h1 { font-size: 1.1rem; }
-  }
-
-  /* WhatsApp Banner */
-  .wa-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    background: linear-gradient(135deg, #0d1f13 0%, #1a3a22 100%);
-    border: 1.5px solid #25d366;
-    border-radius: 12px;
-    padding: 14px 20px;
-    margin-bottom: 16px;
-    direction: rtl;
-    flex-wrap: wrap;
-  }
-  .wa-banner-left { display: flex; align-items: center; gap: 12px; }
-  .wa-icon { width: 42px; height: 42px; background: #25d366; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .wa-icon svg { width: 24px; height: 24px; }
-  .wa-text h3 { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 2px; }
-  .wa-text p { font-size: 0.78rem; color: #aaa; }
-  .wa-btn {
-    background: #25d366;
-    color: #000;
-    font-family: 'Cairo', sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    padding: 9px 20px;
-    border-radius: 8px;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-  .wa-btn:hover { background: #1ebe5d; }
-</style>
-<link rel="me" href="https://www.blogger.com/profile/18208664877613248056" />
-<meta name='google-adsense-platform-account' content='ca-host-pub-1556223355139109'/>
-<meta name='google-adsense-platform-domain' content='blogspot.com'/>
-</head>
-<body>
+<!-- ربط ملف CSS -->
+<link rel="stylesheet" href="Match.css">
 
 <div class="topbar">
   <a href="#" id="top-link-1">البث الرئيسي</a>
@@ -160,7 +53,7 @@
       </div>
     </div>
     <a href="https://whatsapp.com/channel/0029VbBqLLLHgZWlTsF4H11t" target="_blank" class="wa-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="black"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5 -.669-.51 -.173 -.008 -.371 -.01 -.57 -.01 -.198 0 -.52 .074 -.792 .372 -.272 .297 -1.04 1.0１６ -１．０４ ２．４７９ ０ １．４６２ １．０６５ ２．８７５ １．２１３ ３．０７４ .１４９ .１９８ ２．０９６ ３．２ ５．０７７ ４．４８７ .７０９ .３０６ １．２６２ .４８９ １．６９４ .６２５ .７１２ .２２７ １．３６ .１９５ １．８７１ .１１８ .５７１ -.０８５ １．７５８ -.７１９ ２．００６ -１．４１３ .２４８ -.６９４ .２４８ -１．２８９ .₁₇₃ -₁．₄₁₃ -.₀₇₄ -₀．₁₂₄ -₀．₂₇₂ -₀．₁₉₈ -₀．₅₇ -₀．₃₄₇m-５．₄₂₁ ７．４₀³h-⁰⁰⁴a９．８７ ９．８７ ₀ ₀¹-⁵．₀³¹-¹．³⁷⁸l-⁰．³⁶¹-⁰．²¹⁴-³．７⁴¹.⁹⁸².⁹⁹⁸-³．⁶⁴⁸-⁰．²³⁵-⁰．³⁷⁴a９．８６ ９．８６ ₀ ₀¹-¹．５¹-⁵．²⁶c.₀₀¹-⁵．⁴⁵ ４．４³⁶-９．８８⁴ ９．８８⁸-９．８八十 四   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线   线
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="black"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       اشترك الآن
     </a>
   </div>
@@ -205,128 +98,10 @@
     </div>
   </div>
 
-  <div class="footer">جدول ازنو تيفي | koora TV</div>
+  <div class="footer">جدول  كورة تيفي  | koora TV</div>
 </div>
 
-<script>
-
-  
-
-  // ====== STREAM CONFIG ======
-  (function() {
-    // Block all popups
-    window.open = function() { return null; };
-    window.alert = function() {};
-    window.confirm = function() { return false; };
-    window.prompt = function() { return null; };
-    
-    // Block redirects from iframes
-    window.addEventListener('blur', function() {
-      setTimeout(function() { window.focus(); }, 50);
-    });
-
-    // Block beforeunload redirects
-    window.addEventListener('beforeunload', function(e) {
-      e.stopPropagation();
-    });
-
-    // Override iframes after load
-    function blockIframePopups() {
-      document.querySelectorAll('iframe').forEach(function(iframe) {
-        try {
-          if (iframe.contentWindow) {
-            iframe.contentWindow.open = function() { return null; };
-            iframe.contentWindow.alert = function() {};
-            iframe.contentWindow.confirm = function() { return false; };
-          }
-        } catch(e) {}
-      });
-    }
-    setInterval(blockIframePopups, 1000);
-  })();
-
-  const CONFIG = {
-    matchTitle: "⚽ بث مباشر للمباراة",
-    topLinks: {
-      link1: { text: "البث الرئيسي", url: "https://aznotv.com/main" },
-      link2: { text: "AZNO TV", url: "https://aznotv.com" }
-    },
-    servers: {
-      server1: "",
-      server2: "",
-      server3: ""
-    }
-  };
-
-  let currentServerNum = 1;
-  let isPlayClicked = false;
-  let lastMsgId = 0;
-
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById('match-main-title').innerText = CONFIG.matchTitle;
-    const l1 = document.getElementById('top-link-1');
-    l1.innerText = CONFIG.topLinks.link1.text; l1.href = CONFIG.topLinks.link1.url;
-    const l2 = document.getElementById('top-link-2');
-    l2.innerText = CONFIG.topLinks.link2.text; l2.href = CONFIG.topLinks.link2.url;
-
-
-  });
-
-  // ====== STREAM FUNCTIONS ======
-  function loadServerSource(n) {
-    const targetIframe = document.getElementById('iframe-server' + n);
-    const streamUrl = CONFIG.servers['server' + n];
-    if (!streamUrl || !targetIframe) return;
-    if (targetIframe.src !== streamUrl) {
-      for (let i = 1; i <= 3; i++) {
-        const iframe = document.getElementById('iframe-server' + i);
-        if (i !== n && iframe) iframe.src = "";
-      }
-      targetIframe.src = streamUrl;
-    }
-  }
-
-  function switchServer(n) {
-    currentServerNum = n;
-    document.querySelectorAll('.server-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('server' + n).classList.add('active');
-    document.querySelectorAll('.server-btn')[n - 1].classList.add('active');
-    if (isPlayClicked) { loadServerSource(n); setTimeout(goFullscreen, 200); setTimeout(triggerAutoClose, 1500); }
-  }
-
-  function goFullscreen() {
-    const pw = document.getElementById('player-wrapper');
-    if (!pw) return;
-    if (pw.requestFullscreen) pw.requestFullscreen();
-    else if (pw.webkitRequestFullscreen) pw.webkitRequestFullscreen();
-    else if (pw.mozRequestFullScreen) pw.mozRequestFullScreen();
-    else if (pw.msRequestFullscreen) pw.msRequestFullscreen();
-  }
-
-  function triggerAutoClose() {
-    const iframe = document.getElementById('iframe-server' + currentServerNum);
-    if (!iframe) return;
-    try {
-      const rect = iframe.getBoundingClientRect();
-      iframe.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true, clientX: rect.left + rect.width * 0.86, clientY: rect.top + rect.height * 0.42 }));
-    } catch(e) {}
-  }
-
-  function dismissOverlay() {
-    isPlayClicked = true;
-    document.getElementById('overlay').classList.add('hidden');
-    loadServerSource(currentServerNum);
-    goFullscreen();
-    setTimeout(triggerAutoClose, 1500);
-  }
-
-  function refreshPage() {
-    const icon = document.getElementById('refresh-icon');
-    if (icon) { icon.style.transition = 'transform 0.6s'; icon.style.transform = 'rotate(360deg)'; }
-    setTimeout(() => window.location.reload(), 600);
-  }
-
-</script>
+<!-- ربط ملف JavaScript -->
+<script src="Match.js"></script>
 </body>
-</html> 
+</html>
