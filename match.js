@@ -39,7 +39,7 @@ const CONFIG = {
   },
   servers: {
     server1: "https://koracity-live.com/live/bein1.php",
-    server2: "https://koracity-live.com/live/bein11.php",
+    server2: "https://koracity-live.com/live/bein444.php",
     server3: "https://koracity-live.com/live/bein888.php"
   }
 };
