@@ -38,7 +38,7 @@ const CONFIG = {
     link2: { text: "koora TV", url: "https://kooratv-1.vercel.app" }
   },
   servers: {
-    server1: "https://koracity-live.com/live/bein1.php",
+    server1: "https://koracity-live.com/live/bein.php",
     server2: "https://koracity-live.com/live/bein444.php",
     server3: "https://koracity-live.com/live/bein66.php"
   }
